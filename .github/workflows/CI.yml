@@ -1,0 +1,37 @@
+name: CI pipgeo
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest]
+        python-version: ["3.8","3.9","3.10","3.11"]
+      fail-fast: false
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install Dependencies (Windows)
+      continue-on-error: true
+      run:
+        python -m pip install --upgrade pip
+        pip install -U pip setuptools
+        pip install wheel
+      if: matrix.os == 'windows-latest'
+    - name: Test package
+      run: |
+        python setup.py install
+        pipgeo -h
+        pipgeo sys
