@@ -51,5 +51,9 @@ pipgeo sys
 
 ### Changelog
 
+#### v0.0.4
+- added dependency check from dependency tree
+- dependencies also installed using pipgeo
+
 #### v0.0.3
 - updated readme with instructions

@@ -125,9 +125,19 @@ def download_file(url, lib):
         print(f"Requirement already satisified {lib} installed")
 
 
+def dependency_check(lib):
+    deptree = {'basemap': 'pyproj', 'fiona': 'gdal', 'rasterio': 'gdal'}
+    if deptree.get(lib.lower()) is not None:
+        dependency = deptree.get(lib.lower())
+        if not dependency in installed_packages:
+            print(f'Fetching dependency {dependency}')
+            fetch_geo(dependency)
+
+
 def fetch_geo(lib):
     lib_list = []
     match_list = []
+    dependency_check(lib)
     response = requests.get(
         'https://github.com/cgohlke/geospatial.whl/releases/latest')
     if response.history:
