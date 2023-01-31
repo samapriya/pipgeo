@@ -16,6 +16,7 @@ import argparse
 import json
 import os
 import platform
+import re
 import subprocess
 import sys
 from collections import OrderedDict
@@ -49,14 +50,15 @@ ob1 = Solution()
 # Get package version
 
 
+def version_latest(package):
+    response = requests.get(f'https://pypi.org/pypi/{package}/json')
+    latest_version = response.json()['info']['version']
+    return latest_version
+
+
 def pipgeo_version():
-    url = "https://pypi.org/project/pipgeo/"
-    source = requests.get(url)
-    html_content = source.text
-    soup = BeautifulSoup(html_content, "html.parser")
-    company = soup.find("h1")
     vcheck = ob1.compareVersion(
-        company.string.strip().split(" ")[-1],
+        version_latest('pipgeo'),
         pkg_resources.get_distribution("pipgeo").version,
     )
     if vcheck == 1:
@@ -67,7 +69,7 @@ def pipgeo_version():
         print(
             "Current version of pipgeo is {} upgrade to lastest version: {}".format(
                 pkg_resources.get_distribution("pipgeo").version,
-                company.string.strip().split(" ")[-1],
+                version_latest('pipgeo'),
             )
         )
         print(
@@ -81,7 +83,7 @@ def pipgeo_version():
         print(
             "Possibly running staging code {} compared to pypi release {}".format(
                 pkg_resources.get_distribution("pipgeo").version,
-                company.string.strip().split(" ")[-1],
+                version_latest('pipgeo'),
             )
         )
         print(
@@ -107,8 +109,10 @@ def download_file(url, lib):
     home_dir = expanduser("~")
     filename = url.split('/')[-1]
     full_filename = os.path.join(home_dir, filename)
-
-    if not lib in installed_packages:
+    installed_packages = [
+        f'{pkg.key}-{pkg.version}' for pkg in pkg_resources.working_set]
+    package_match = [x for x in installed_packages if re.search(lib, x)]
+    if not package_match:
         if not os.path.exists(full_filename):
             print(f'Downloading whl file to {full_filename}')
             resp = requests.get(url, stream=True)
@@ -122,7 +126,27 @@ def download_file(url, lib):
         else:
             print(f'File already exists: SKIPPING {filename}')
     else:
-        print(f"Requirement already satisified {lib} installed")
+        released_version = filename.split('-c')[0].split('-')[-1]
+        package_version = package_match[0].split('-')[-1]
+        vcheck = ob1.compareVersion(
+            released_version,
+            package_version,
+        )
+        if vcheck == 1:
+            print(
+                f"Current version of pipgeo is {package_version} upgrading to lastest version: {released_version}")
+            print(f'Downloading whl file to {full_filename}')
+            resp = requests.get(url, stream=True)
+            with open(full_filename, 'wb') as file_desc:
+                for chunk in resp.iter_content(chunk_size=5000000):
+                    file_desc.write(chunk)
+            subprocess.call(
+                f"{sys.executable} -m pip install {full_filename}", shell=True
+            )
+            os.unlink(full_filename)
+        else:
+            print(
+                f"Requirement already satisified {package_match[0]} installed")
 
 
 def dependency_check(lib):
@@ -180,7 +204,7 @@ def release_list():
 
     for a in soup.find_all('a', href=True):
         if sys_parse() in a['href']:
-            lib_list.append(a['href'].split('/')[-1].split('-')[0].lower())
+            lib_list.append(a['href'].split('/')[-1].split('-c')[0].lower())
     print(json.dumps(lib_list, indent=2))
 
 

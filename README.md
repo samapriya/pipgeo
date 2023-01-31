@@ -51,6 +51,11 @@ pipgeo sys
 
 ### Changelog
 
+#### v0.0.5
+- release tool now print available release packages and version number
+- improved pypi version check functionality
+- fetch tool auto upgrades to latest version if new version is available in release
+
 #### v0.0.4
 - added dependency check from dependency tree
 - dependencies also installed using pipgeo
