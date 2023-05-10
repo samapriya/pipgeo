@@ -51,6 +51,9 @@ pipgeo sys
 
 ### Changelog
 
+#### v0.0.6
+- release checker tool now checks if packages exists for installed python version in latest release
+
 #### v0.0.5
 - release tool now print available release packages and version number
 - improved pypi version check functionality

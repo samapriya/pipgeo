@@ -25,6 +25,7 @@ from os.path import expanduser
 import pkg_resources
 import requests
 from bs4 import BeautifulSoup
+from natsort import natsorted
 
 if not str(platform.system().lower()) == "windows":
     sys.exit('This tool is only designed to fetch binaries for windows OS')
@@ -104,8 +105,30 @@ def sys_parse():
         overall_sys = f'cp{version_tag}-cp{version_tag}-win_{exc_name}'
     return overall_sys
 
+def release_checker():
+    version_tag = f"{sys.version_info[0]}{sys.version_info[1]}"
+    syspy = f'cp{version_tag}'
+    response = requests.get(
+        'https://github.com/cgohlke/geospatial.whl/releases/latest')
+    if response.history:
+        tag = (response.url.split('/')[-1])
+
+    url = f"https://github.com/cgohlke/geospatial.whl/releases/expanded_assets/{tag}"
+    source = requests.get(url)
+    html_content = source.text
+    soup = BeautifulSoup(html_content, "html.parser")
+    release_package_pylist = []
+    for a in soup.find_all('a', href=True):
+        rl= a['href'].split('/')[-1].lower().split('-win')[0].split('-')[-1].split('_')[0]
+        if rl.startswith('cp'):
+            release_package_pylist.append(rl)
+    unique_pkg = list(set(release_package_pylist))
+    if not syspy in unique_pkg:
+        print('Latest package releases only support python versions'+'\n')
+        sys.exit(json.dumps(natsorted([release.split('cp')[1].replace('3','3.') for release in unique_pkg]),indent=2))
 
 def download_file(url, lib):
+    release_checker()
     home_dir = expanduser("~")
     filename = url.split('/')[-1]
     full_filename = os.path.join(home_dir, filename)
@@ -159,6 +182,7 @@ def dependency_check(lib):
 
 
 def fetch_geo(lib):
+    release_checker()
     lib_list = []
     match_list = []
     dependency_check(lib)
@@ -191,6 +215,7 @@ def fetch_from_parser(args):
 
 
 def release_list():
+    release_checker()
     lib_list = []
     response = requests.get(
         'https://github.com/cgohlke/geospatial.whl/releases/latest')

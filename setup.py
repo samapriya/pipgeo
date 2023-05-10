@@ -9,14 +9,15 @@ def readme():
 
 setuptools.setup(
     name="pipgeo",
-    version="0.0.5",
+    version="0.0.6",
     packages=find_packages(),
     url="https://github.com/samapriya/pipgeo",
     install_requires=[
         "wheel>=0.38.4",
         "requests>=2.28.1",
         "beautifulsoup4>=4.11.1",
-        "setuptools>=41.2.0"
+        "setuptools>=41.2.0",
+        "natsort>=8.3.1"
     ],
     license="Apache 2.0",
     long_description=open("README.md").read(),
@@ -26,7 +27,6 @@ setuptools.setup(
         "Intended Audience :: Science/Research",
         "Natural Language :: English",
         "License :: OSI Approved :: Apache Software License",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
