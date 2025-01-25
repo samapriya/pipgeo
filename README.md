@@ -51,6 +51,12 @@ pipgeo sys
 
 ### Changelog
 
+#### v0.0.7
+- Added download-only mode and custom output directory support with `--download-only` and `--output` flags
+- Improved error handling with retries for HTTP requests and better exception handling
+- Refactored code structure with type hints, dataclasses, and proper module organization
+- Added better dependency management and version checking with more robust comparison logic
+
 #### v0.0.6
 - release checker tool now checks if packages exists for installed python version in latest release
 
