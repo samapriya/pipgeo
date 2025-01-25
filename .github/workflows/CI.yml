@@ -19,19 +19,29 @@ jobs:
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
+        
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
+        
     - name: Install Dependencies (Windows)
       continue-on-error: true
-      run:
+      run: |
         python -m pip install --upgrade pip
         pip install -U pip setuptools
-        pip install wheel
+        pip install wheel build
       if: matrix.os == 'windows-latest'
+      
+    - name: Build package
+      run: |
+        python -m build
+        
+    - name: Install package from dist
+      run: |
+        pip install $(ls dist/*.whl | head -n 1)
+        
     - name: Test package
       run: |
-        python setup.py install
         pipgeo -h
         pipgeo sys
