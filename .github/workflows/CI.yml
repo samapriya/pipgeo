@@ -38,8 +38,10 @@ jobs:
         python -m build
         
     - name: Install package from dist
+      shell: pwsh
       run: |
-        pip install $(ls dist/*.whl | head -n 1)
+        $wheel = Get-ChildItem dist/*.whl | Select-Object -First 1
+        pip install $wheel.FullName
         
     - name: Test package
       run: |
