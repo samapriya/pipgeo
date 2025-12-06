@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
@@ -12,26 +15,29 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        python-version: ["3.9","3.10","3.11"]
+        python-version: ["3.11", "3.12", "3.13"]
       fail-fast: false
+    
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
         
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        enable-cache: true
         
-    - name: Install Dependencies (Windows)
-      continue-on-error: true
+    - name: Install Dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install -U pip setuptools
-        pip install wheel build
-      if: matrix.os == 'windows-latest'
+        uv pip install --system --upgrade pip setuptools wheel
+        uv pip install --system build
       
     - name: Build package
       run: |
@@ -41,9 +47,47 @@ jobs:
       shell: pwsh
       run: |
         $wheel = Get-ChildItem dist/*.whl | Select-Object -First 1
-        pip install $wheel.FullName
+        uv pip install --system $wheel.FullName
         
-    - name: Test package
+    - name: Test package help
       run: |
         pipgeo -h
-        pipgeo sys
+        pipgeo release
+        
+    - name: Test package version check
+      run: |
+        python -c "import pipgeo; print('Import successful')"
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      if: matrix.python-version == '3.12'
+      with:
+        name: dist-packages
+        path: dist/
+        retention-days: 7
+
+  lint:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      
+    - name: Install dependencies
+      run: |
+        uv pip install --system ruff black
+        
+    - name: Check formatting with black
+      run: |
+        black --check pipgeo/
+        
+    - name: Lint with ruff
+      run: |
+        ruff check pipgeo/
