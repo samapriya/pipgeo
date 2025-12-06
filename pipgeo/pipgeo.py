@@ -221,7 +221,7 @@ def install_wheel_with_uv(wheel_path: Path, package_name: str, quiet: bool = Fal
         )
         
         if not quiet:
-            print(f"✓ Installed with uv: {package_name}")
+            print(f"Installed with uv: {package_name}")
         return True
     except subprocess.CalledProcessError as e:
         print(f"Error installing with uv: {e.stderr}", file=sys.stderr)
@@ -239,7 +239,7 @@ def install_wheel_with_pip(wheel_path: Path, package_name: str, quiet: bool = Fa
         )
         
         if not quiet:
-            print(f"✓ Installed with pip: {package_name}")
+            print(f"Installed with pip: {package_name}")
         return True
     except subprocess.CalledProcessError as e:
         print(f"Error installing with pip: {e.stderr}", file=sys.stderr)
@@ -302,7 +302,7 @@ def sys_setup(
             print("Using pip (forced)")
         else:
             if installer == 'uv':
-                print("Using uv for faster installation ⚡")
+                print("Using uv for faster installation")
             else:
                 print("Using pip (uv not found - install with: pip install uv)")
 
@@ -350,16 +350,16 @@ def sys_setup(
             download_and_install_package(package, force_pip=force_pip)
 
         if not to_install and not to_upgrade:
-            print('\n✓ All geospatial packages are installed and up to date')
+            print('\nAll geospatial packages are installed and up to date')
         else:
             if to_install:
                 print('\nNewly installed packages:')
                 for pkg in to_install:
-                    print(f"  ✓ {pkg.name} {pkg.version}")
+                    print(f"  - {pkg.name} {pkg.version}")
             if to_upgrade:
                 print('\nUpgraded packages:')
                 for pkg, old_ver in to_upgrade:
-                    print(f"  ✓ {pkg.name} {old_ver} -> {pkg.version}")
+                    print(f"  - {pkg.name} {old_ver} -> {pkg.version}")
 
 
 def fetch_geo(
@@ -412,7 +412,7 @@ def fetch_geo(
                     print(f"Upgrading {lib} from {installed_version} to {package.version}")
                     download_and_install_package(package, force_pip=force_pip)
                 else:
-                    print(f"✓ Package {lib} {installed_version} is up to date")
+                    print(f"Package {lib} {installed_version} is up to date")
             else:
                 download_and_install_package(package, force_pip=force_pip)
 
